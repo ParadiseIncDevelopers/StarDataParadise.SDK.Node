@@ -1,0 +1,20 @@
+{
+  "name": "stardataparadise-sdk",
+  "version": "0.1.0",
+  "description": "Asynchronous StarDataParadise Server SQL and management client for Node.js",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "files": [
+    "src/",
+    "contracts/sdp-contract-v1.zip",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  }
+}
