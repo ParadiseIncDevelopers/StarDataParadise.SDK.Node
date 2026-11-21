@@ -35,9 +35,10 @@ try {
     $pack = @($json -join [Environment]::NewLine | ConvertFrom-Json)[0]
     $files = @(
         'README.md', 'contracts/sdp-contract-v1.zip', 'package.json', 'src/errors.mjs',
-        'src/index.mjs', 'src/provider.mjs', 'src/types.mjs', 'src/wire.mjs'
+        'src/index.mjs', 'src/native.mjs', 'src/provider.mjs', 'src/types.mjs', 'src/wire.mjs'
     )
-    if ($pack.id -ne 'stardataparadise-sdk@0.1.0' -or
+    $sdkMetadata = Get-Content -Raw -LiteralPath 'package.json' | ConvertFrom-Json
+    if ($pack.id -ne ($sdkMetadata.name + '@' + $sdkMetadata.version) -or
         @(Compare-Object $files @($pack.files.path)).Count -ne 0 -or $pack.entryCount -ne $files.Count) {
         throw 'npm tarball identity or contents differ from the verified release specification.'
     }
@@ -57,9 +58,11 @@ try {
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {sep} from 'node:path';
-import {connect, contractPath} from 'stardataparadise-sdk';
+import {connect, connectNative, NativeJson, NativeDecimal, contractPath} from 'stardataparadise-sdk';
 const installed = process.cwd() + sep + 'node_modules' + sep;
-if (typeof connect !== 'function' || !contractPath.startsWith(installed)) process.exit(1);
+if (typeof connect !== 'function' || typeof connectNative !== 'function' || !contractPath.startsWith(installed)) process.exit(1);
+if (new NativeJson('{"id":9007199254740993}').text !== '{"id":9007199254740993}') process.exit(1);
+if (new NativeDecimal('12345678901234567890.123456789').text !== '12345678901234567890.123456789') process.exit(1);
 const digest = createHash('sha256').update(readFileSync(contractPath)).digest('hex');
 if (digest !== process.argv[1].toLowerCase()) process.exit(1);
 console.log('Installed package entry point and immutable wire archive verified');

@@ -32,8 +32,12 @@ function replyError(error, requestToken) {
     requestToken,
     line: error.line,
     column: error.column,
+    nativeErrno:error.native_errno,phase:error.phase,commitState:error.commit_state,
+    runState:error.run_state,runId:error.run_id,retry:error.retry,
+    callId:error.call_id,actionCommitState:error.action_commit_state,
+    causeNativeErrno:error.cause_native_errno,causeSqlstate:error.cause_sqlstate,
   };
-  return error.unknown_outcome ? new OutcomeUnknownError(undefined, attrs) : new SdpError(error.message, attrs);
+  return error.unknown_outcome ? new OutcomeUnknownError(error.native_errno === undefined ? undefined : error.message, attrs) : new SdpError(error.message, attrs);
 }
 
 export class Wire {
@@ -116,7 +120,7 @@ export class Wire {
     return this.#active ? Object.freeze({id: this.#active.id, op: this.#active.op}) : null;
   }
 
-  async call(op, body = {}, requestToken) {
+  async call(op, body = {}, requestToken, uncertain = false) {
     if (!this.open) throw disconnected();
     if (this.#active) throw new SdpError('A wire request is already active.', {code: 1013, sqlstate: '25000'});
     if (!/^[a-z][a-z_.]{0,63}$/.test(op) || !plain(body)) throw new TypeError('Invalid wire operation or body.');
@@ -134,7 +138,7 @@ export class Wire {
     this.#id = id;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => this.#terminate(expired()), this.#timeoutMs);
-      this.#active = {id, op, resolve, reject, timer, requestToken};
+      this.#active = {id, op, resolve, reject, timer, requestToken, uncertain};
       try { this.#socket.write(frame); } catch { this.#terminate(disconnected()); }
     });
   }
@@ -150,10 +154,10 @@ export class Wire {
     this.#socket.destroy();
     const active = this.#takeActive();
     if (!active) return;
-    const {reject, requestToken} = active;
-    if (requestToken) {
-      reject(new OutcomeUnknownError(undefined, {
-        code: error.code, sqlstate: error.sqlstate, requestToken, cause: error,
+    const {reject, requestToken, uncertain} = active;
+    if (requestToken || uncertain) {
+      reject(new OutcomeUnknownError(requestToken ? undefined : 'Operation outcome is unknown. Query the run or operation outcome before retrying.', {
+        code: error.code, sqlstate: error.sqlstate, requestToken, cause: error, commitState: 'unknown',
       }));
     } else reject(error);
   }

@@ -1,5 +1,5 @@
 export class SdpError extends Error {
-  constructor(message, {code, sqlstate, requestToken, unknownOutcome = false, cause, correlationId, line, column} = {}) {
+  constructor(message, {code, sqlstate, requestToken, unknownOutcome = false, cause, correlationId, line, column, nativeErrno, phase, commitState, runState, runId, retry, callId, actionCommitState, causeNativeErrno, causeSqlstate} = {}) {
     super(message, {cause});
     this.name = new.target.name;
     this.code = code;
@@ -9,6 +9,10 @@ export class SdpError extends Error {
     this.correlationId = correlationId;
     this.line = line;
     this.column = column;
+    this.nativeErrno=nativeErrno; this.phase=phase; this.commitState=commitState;
+    this.runState=runState; this.runId=runId; this.retry=retry;
+    this.callId=callId; this.actionCommitState=actionCommitState;
+    this.causeNativeErrno=causeNativeErrno; this.causeSqlstate=causeSqlstate;
   }
 }
 

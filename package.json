@@ -1,6 +1,6 @@
 {
   "name": "stardataparadise-sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Asynchronous StarDataParadise Server SQL and management client for Node.js",
   "type": "module",
   "exports": {

@@ -1,13 +1,13 @@
 # StarDataParadise SDK for Node.js
 
-Version 0.1.0 targets Node.js 22 and later and StarDataParadise Server 0.3.0 running wire v1 over TLS. The package uses Node built-ins at runtime. It includes the immutable Server contract and exposes the embedded archive through the contractPath export.
+Version 0.2.0 targets Node.js 22 and later and StarDataParadise Server 0.5.0 running wire v1 over TLS. The package uses Node built-ins at runtime. It includes the immutable Server contract and exposes the embedded archive through the contractPath export.
 
 ## Install
 
-Use the 0.1.0 tarball from your distribution or build it with the commands below. From your application directory, point npm to the downloaded or built package.
+Use the 0.2.0 tarball from your distribution or build it with the commands below. From your application directory, point npm to the downloaded or built package.
 
 ~~~powershell
-npm install C:/SDP/packages/stardataparadise-sdk-0.1.0.tgz
+npm install C:/SDP/packages/stardataparadise-sdk-0.2.0.tgz
 ~~~
 
 Save the example as `query.mjs` and run it with `node query.mjs`. Node also treats `.js` examples as modules when the application declares `"type": "module"` in `package.json`.
@@ -57,7 +57,7 @@ Set timeoutMs for the TLS connection and request deadline. cancel sends a same-i
 
 ## Management
 
-Connection methods expose health, metadata, capabilities, history, Decision validation, model prediction, datasets and jobs. The Server enforces capability and permission checks.
+Existing wire management methods expose health, metadata, capabilities, history, Decision validation, model prediction, datasets and compute/jobs. The Server enforces capability and permission checks.
 
 ~~~js
 const history = await database.history('orders', { limit: 20 });
@@ -75,6 +75,51 @@ npm test
 pwsh -NoProfile -File .\ci.ps1
 ~~~
 
-CI checks the embedded wire contract, runs the Node tests, creates `out/packages/stardataparadise-sdk-0.1.0.tgz`, and verifies it in a separate consumer directory. Pass `-Server`, `-OpenSsl`, and `-FixtureHarness` together to exercise a live Server and the durable commit ledger. The embedded contract archive SHA-256 is `e6500900a3fa34910781ea92d5e41fe8716511fac6f6d6c689ff9cce15d578ab`.
+CI checks the embedded wire contract, runs the Node tests, creates `out/packages/stardataparadise-sdk-0.2.0.tgz`, and verifies it in a separate consumer directory. Pass `-Server`, `-OpenSsl`, and `-FixtureHarness` together to exercise a live Server and the durable commit ledger. The embedded contract archive SHA-256 is `e6500900a3fa34910781ea92d5e41fe8716511fac6f6d6c689ff9cce15d578ab`.
 
 [Server setup and other SDKs](https://github.com/ParadiseIncDevelopers/StarDataParadiseServer) · [Installed-package acceptance example](tests/acceptance.mjs)
+
+## Native SQL and AI
+
+`connectNative()` opens a dedicated session on a server advertising
+`native_sql_v1`; its default is autocommit. Bind values with positional `?`
+markers. An entire stored procedure body is one statement.
+
+```js
+import { connectNative } from 'stardataparadise-sdk';
+
+const db = await connectNative({ user: process.env.SDP_USER,
+  password: process.env.SDP_PASSWORD, caFile: process.env.SDP_CA,
+  tlsName: 'localhost' });
+try {
+  await db.execute('START AI CONVERSATION app.assistant'); // Existing conversation.
+  await db.execute('APPEND PROMPT ?', ['Summarize the approved context.']);
+  await db.execute('APPEND RESPONSE INTO @answer AS JSON RETURNING METADATA INTO @meta');
+  await db.commit({ waitTimeoutMs: 20000 });
+  const result = await db.execute('SELECT @answer,@meta');
+  console.log(result.sets[0].rows[0].map(value => value.text));
+} finally { await db.close(); }
+```
+
+Model definitions can use OpenAI, Claude or an imported local GGUF runtime.
+Credentials remain in the worker's owner-bound store. Use
+`commit({asynchronous:true})`, `fetchResponse(runId)` and `cancelRun(runId)` for
+durable asynchronous runs.
+
+Native SQL `HIST` (SQLgit branches/remotes) and SQL `JOB` scheduling are deferred
+and are not enabled by this release. Existing wire history and compute/job APIs
+remain available under the Server's advertised capabilities; they are separate
+from those deferred SQL commands. AI inference and model import keep their internal queue.
+
+Rows preserve integer values as BigInt, exact decimal text as `NativeDecimal`,
+JSON source as `NativeJson`, binary data as Buffer, and signed SQL durations as
+`NativeTemporal`. Parsing JSON with ordinary `JSON.parse` can round large
+numbers; retain `NativeJson.text` when exact digits matter. Results expose
+`sets`, `columns`, `rows` and affected-row metadata. Large results use verified
+chunks within the server's bound.
+
+Native statements are sent once. A wait error may report `commitState` and
+`runId` for already committed work; fetch the run instead of repeating business
+SQL. A native transport failure may have an uncertain outcome without a legacy
+CRUD receipt token. No native statement is automatically reconnected or retried.
+The existing `connect()` API retains its transaction and receipt behavior.
