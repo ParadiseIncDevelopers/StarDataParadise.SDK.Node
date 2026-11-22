@@ -7,7 +7,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import {
     Bind, Collection, DateValue, Decimal, OutcomeUnknownError, RecordValue, SdpError,
     TimestampValue, TimeValue, connect, contractPath,
-} from 'stardataparadise-sdk';
+} from 'stardataparadise';
 
 const env = process.env;
 const [password, guestPassword] = readFileSync(0, 'utf8').trimEnd().split(/\r?\n/);
@@ -18,7 +18,7 @@ const options = {
 
 const contractDigest = createHash('sha256').update(readFileSync(contractPath)).digest('hex');
 const installedPath = relative(dirname(fileURLToPath(import.meta.url)), contractPath).replaceAll('\\', '/');
-assert.equal(installedPath, 'node_modules/stardataparadise-sdk/contracts/sdp-contract-v1.zip');
+assert.equal(installedPath, 'node_modules/stardataparadise/contracts/sdp-contract-v1.zip');
 assert.equal(contractDigest, env.SDP_SDK_CONTRACT_SHA256);
 assert.equal(contractDigest, 'e6500900a3fa34910781ea92d5e41fe8716511fac6f6d6c689ff9cce15d578ab');
 const golden = JSON.parse(readFileSync(env.SDP_SDK_GOLDEN, 'utf8')).body.values;

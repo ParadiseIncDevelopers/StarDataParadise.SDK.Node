@@ -4,11 +4,13 @@ Version 0.2.0 targets Node.js 22 and later and StarDataParadise Server 0.5.0 run
 
 ## Install
 
-Use the 0.2.0 tarball from your distribution or build it with the commands below. From your application directory, point npm to the downloaded or built package.
+Install the package from npm in your application directory:
 
 ~~~powershell
-npm install C:/SDP/packages/stardataparadise-sdk-0.2.0.tgz
+npm install stardataparadise
 ~~~
+
+Use `npm install stardataparadise@0.2.0` to select this exact release. A locally built archive can also be installed with `npm install C:/SDP/packages/stardataparadise-0.2.0.tgz`.
 
 Save the example as `query.mjs` and run it with `node query.mjs`. Node also treats `.js` examples as modules when the application declares `"type": "module"` in `package.json`.
 
@@ -17,7 +19,7 @@ Save the example as `query.mjs` and run it with `node query.mjs`. Node also trea
 This example reads and updates an existing `orders(id, note)` table. The account needs SELECT and UPDATE permissions. Set `SDP_USER`, `SDP_PASSWORD`, and `SDP_CA` in the process environment. The CA file establishes trust in the Server certificate. The TLS identity defaults to the connection host. Set tlsName to the matching certificate name when routing to a different address.
 
 ~~~js
-import { Bind, connect } from 'stardataparadise-sdk';
+import { Bind, connect } from 'stardataparadise';
 
 const database = await connect({
   host: '127.0.0.1',
@@ -75,7 +77,7 @@ npm test
 pwsh -NoProfile -File .\ci.ps1
 ~~~
 
-CI checks the embedded wire contract, runs the Node tests, creates `out/packages/stardataparadise-sdk-0.2.0.tgz`, and verifies it in a separate consumer directory. Pass `-Server`, `-OpenSsl`, and `-FixtureHarness` together to exercise a live Server and the durable commit ledger. The embedded contract archive SHA-256 is `e6500900a3fa34910781ea92d5e41fe8716511fac6f6d6c689ff9cce15d578ab`.
+CI checks the embedded wire contract, runs the Node tests, creates `out/packages/stardataparadise-0.2.0.tgz`, and verifies it in a separate consumer directory. Pass `-Server`, `-OpenSsl`, and `-FixtureHarness` together to exercise a live Server and the durable commit ledger. The embedded contract archive SHA-256 is `e6500900a3fa34910781ea92d5e41fe8716511fac6f6d6c689ff9cce15d578ab`.
 
 [Server setup and other SDKs](https://github.com/ParadiseIncDevelopers/StarDataParadiseServer) · [Installed-package acceptance example](tests/acceptance.mjs)
 
@@ -86,7 +88,7 @@ CI checks the embedded wire contract, runs the Node tests, creates `out/packages
 markers. An entire stored procedure body is one statement.
 
 ```js
-import { connectNative } from 'stardataparadise-sdk';
+import { connectNative } from 'stardataparadise';
 
 const db = await connectNative({ user: process.env.SDP_USER,
   password: process.env.SDP_PASSWORD, caFile: process.env.SDP_CA,

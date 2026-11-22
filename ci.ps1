@@ -58,7 +58,7 @@ try {
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {sep} from 'node:path';
-import {connect, connectNative, NativeJson, NativeDecimal, contractPath} from 'stardataparadise-sdk';
+import {connect, connectNative, NativeJson, NativeDecimal, contractPath} from 'stardataparadise';
 const installed = process.cwd() + sep + 'node_modules' + sep;
 if (typeof connect !== 'function' || typeof connectNative !== 'function' || !contractPath.startsWith(installed)) process.exit(1);
 if (new NativeJson('{"id":9007199254740993}').text !== '{"id":9007199254740993}') process.exit(1);
