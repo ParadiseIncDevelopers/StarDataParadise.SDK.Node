@@ -125,3 +125,10 @@ Native statements are sent once. A wait error may report `commitState` and
 SQL. A native transport failure may have an uncertain outcome without a legacy
 CRUD receipt token. No native statement is automatically reconnected or retried.
 The existing `connect()` API retains its transaction and receipt behavior.
+
+## License
+
+The original SDK, examples and documentation are licensed under the
+[MIT License](LICENSE), which permits commercial use, modification and
+redistribution with the copyright and permission notice retained.
+See [LICENSING.md](LICENSING.md) for the wire-contract and dependency scope.

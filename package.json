@@ -9,12 +9,15 @@
   "files": [
     "src/",
     "contracts/sdp-contract-v1.zip",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "LICENSING.md"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
     "test": "node --test"
-  }
+  },
+  "license": "MIT"
 }
